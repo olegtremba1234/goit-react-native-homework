@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -14,9 +14,11 @@ import {
   Dimensions,
 } from "react-native";
 
+import { useUserData } from "../../userData";
 import { AntDesign } from "@expo/vector-icons";
 
 const initialState = {
+  avatar: "",
   name: "",
   email: "",
   password: "",
@@ -25,7 +27,8 @@ const initialState = {
   focusedInput: null,
 };
 
-export default function App() {
+export default function RegistrationScreen({ navigation }) {
+  const [avatar, setAvatar] = useState(initialState.avatar);
   const [name, setName] = useState(initialState.name);
   const [email, setEmail] = useState(initialState.email);
   const [password, setPassword] = useState(initialState.password);
@@ -55,16 +58,35 @@ export default function App() {
     setShowPassword(initialState.showPassword);
   };
 
+  const { loginUser } = useUserData();
+
   const onRegister = () => {
-    Alert.alert("Credentials", `${name} + ${email} + ${password}`);
+    if (name === "" || email === "" || password === "") {
+      return Alert.alert("Error", "Please fill in all fields! And try again!");
+    }
     keyboardHide();
+    loginUser();
   };
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setIsShowKeybord(true);
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setIsShowKeybord(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>
       <View style={styles.bgImageContainer}>
         <ImageBackground
-          source={require("../assets/images/bg-photo.png")}
+          source={require("../../assets/images/bg-photo.png")}
           style={styles.BgImage}
         >
           <View
@@ -113,6 +135,7 @@ export default function App() {
                     setFocusedInput("name");
                   }}
                   onBlur={() => setFocusedInput(null)}
+                  onSubmitEditing={() => keyboardHide()}
                 />
               </View>
               <View>
@@ -133,6 +156,7 @@ export default function App() {
                     setIsShowKeybord(true);
                   }}
                   onBlur={() => setFocusedInput(null)}
+                  onSubmitEditing={() => keyboardHide()}
                 />
               </View>
               <View>
@@ -154,6 +178,7 @@ export default function App() {
                     setIsShowKeybord(true);
                   }}
                   onBlur={() => setFocusedInput(null)}
+                  onSubmitEditing={() => keyboardHide()}
                 />
                 <Text
                   style={styles.showPasswordBtn}
@@ -173,7 +198,10 @@ export default function App() {
                   <Text style={styles.btnText}>Register</Text>
                 </TouchableOpacity>
                 <Text style={styles.loginText}>
-                  Allredy have an account? Login
+                  Allredy have an account?{" "}
+                  <Text onPress={() => navigation.navigate("Login")}>
+                    Login
+                  </Text>
                 </Text>
               </>
             )}
