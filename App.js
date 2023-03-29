@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import RegistrationScreen from "./Screens/RegistrationScreen";
-import LoginScreen from "./Screens/LoginScreen";
 
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
+import Router from "./router";
+import UserProvider from "./components/UserProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -17,6 +17,7 @@ export default function App() {
         await Font.loadAsync({
           "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
           "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
+          "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
         });
       } catch (e) {
         console.warn(e);
@@ -39,8 +40,9 @@ export default function App() {
 
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
-      <RegistrationScreen />
-      {/* <LoginScreen /> */}
+      <UserProvider>
+        <Router />
+      </UserProvider>
     </View>
   );
 }

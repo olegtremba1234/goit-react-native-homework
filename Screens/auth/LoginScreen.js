@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -14,6 +14,8 @@ import {
   Dimensions,
 } from "react-native";
 
+import { useUserData } from "../../userData";
+
 const initialState = {
   email: "",
   password: "",
@@ -22,7 +24,7 @@ const initialState = {
   focusedInput: null,
 };
 
-export default function App() {
+export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState(initialState.email);
   const [password, setPassword] = useState(initialState.password);
   const [isShowKeybord, setIsShowKeybord] = useState(
@@ -50,17 +52,36 @@ export default function App() {
     setShowPassword(initialState.showPassword);
   };
 
+  const { loginUser } = useUserData();
+
   const onLogin = () => {
-    Alert.alert("Credentials", `${email} + ${password}`);
+    if (email === "" || password === "") {
+      return Alert.alert("Error", "Please fill in all fields! And try again!");
+    }
     keyboardHide();
     resetForm();
+    loginUser();
   };
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setIsShowKeybord(true);
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setIsShowKeybord(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>
       <View style={styles.bgImageContainer}>
         <ImageBackground
-          source={require("../assets/images/bg-photo.png")}
+          source={require("../../assets/images/bg-photo.png")}
           style={styles.BgImage}
         >
           <View
@@ -130,9 +151,14 @@ export default function App() {
                 >
                   <Text style={styles.btnText}>Login</Text>
                 </TouchableOpacity>
-                <Text style={styles.registerText}>
-                  Don't have an account? Register
-                </Text>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => navigation.navigate("Registration")}
+                >
+                  <Text style={styles.registerText}>
+                    Don't have an account? <Text>Register</Text>
+                  </Text>
+                </TouchableOpacity>
               </>
             )}
           </View>
