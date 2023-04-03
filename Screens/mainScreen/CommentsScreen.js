@@ -7,13 +7,22 @@ import {
   Dimensions,
   TouchableOpacity,
   Alert,
+  Image,
 } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 
-export default function CommentsScreen() {
+export default function CommentsScreen({ route }) {
+  // const { photo } = route.params;
+  // console.log("photo", photo);
+  // console.log("route.params", route.params);
   return (
     <View style={styles.container}>
-      <View style={styles.imageWrapper}></View>
+      <View style={styles.imageWrapper}>
+        {/* <Image
+          source={{ uri: photo }}
+          style={{ width: "100%", height: "100%" }}
+        /> */}
+      </View>
       <View style={styles.inputWrapper}>
         <TextInput
           placeholder="Comment..."
