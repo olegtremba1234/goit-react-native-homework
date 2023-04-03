@@ -123,7 +123,7 @@ export default function ProfileScreen({ navigation }) {
                   activeOpacity={0.7}
                   onPress={() => navigation.navigate("Map")}
                 >
-                  <Feather name="map-pin" size={24} color="black" />
+                  <Feather name="map-pin" size={24} color="#BDBDBD" />
                 </TouchableOpacity>
                 <Text
                   style={{

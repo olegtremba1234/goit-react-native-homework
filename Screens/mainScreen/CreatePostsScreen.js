@@ -1,5 +1,5 @@
 import { Feather, MaterialIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,109 +7,329 @@ import {
   TouchableOpacity,
   Dimensions,
   Alert,
+  TextInput,
+  Image,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  SafeAreaView,
+  ScrollView,
 } from "react-native";
-import { TextInput } from "react-native-gesture-handler";
 
-export default function CreatePostsScreen() {
+import { Camera, CameraType } from "expo-camera";
+import * as Location from "expo-location";
+
+const initialState = {
+  photo: null,
+  title: "",
+  locationTile: "",
+  hasCameraPermission: null,
+  hasLocationPermission: null,
+  camera: null,
+  focusedInput: null,
+  isPhotoDownloaded: false,
+  isShowKeyboard: false,
+  geoLocation: null,
+};
+
+export default function CreatePostsScreen({ navigation }) {
+  const [title, setTitle] = useState(initialState.title);
+  const [locationTitle, setLocationTitle] = useState(initialState.locationTile);
+  const [geoLocation, setGeoLocation] = useState(initialState.geoLocation);
+  const [isShowKeybord, setIsShowKeybord] = useState(
+    initialState.isShowKeyboard
+  );
+  const [camera, setCamera] = useState(initialState.camera);
+  const [photo, setPhoto] = useState(initialState.photo);
+  const [isPhotoDownloaded, setIsPhotoDownloaded] = useState(
+    initialState.isPhotoDownloaded
+  );
+  const [focusedInput, setFocusedInput] = useState(initialState.focusedInput);
+  const [hasCameraPermission, setHasCameraPermission] = useState(
+    initialState.hasCameraPermission
+  );
+  const [hasLocationPermission, setHasLocationPermission] = useState(
+    initialState.hasLocationPermission
+  );
+
+  const [cameraPermission, requestCameraPermission] =
+    Camera.useCameraPermissions();
+
+  const takePhoto = async () => {
+    const photo = await camera.takePictureAsync();
+    setPhoto(photo.uri);
+    setIsPhotoDownloaded(true);
+  };
+
+  const titleHandler = (text) => setTitle(text);
+  const locationTitleHandler = (text) => setLocationTitle(text);
+
+  const keyboardHide = () => {
+    setIsShowKeybord(false);
+    Keyboard.dismiss();
+  };
+
+  const publishPost = () => {
+    if (photo === null || title === "" || locationTitle === "") {
+      return Alert.alert(
+        "Error",
+        "Please add photo and fill in all fields! And try again!"
+      );
+    }
+
+    (async () => {
+      let location = hasLocationPermission
+        ? await Location.getCurrentPositionAsync({})
+        : null;
+      const coords = hasLocationPermission
+        ? {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          }
+        : null;
+
+      const post = {
+        photo,
+        title,
+        location: coords,
+      };
+      navigation.navigate("Posts", { photo, title, location: coords });
+    })();
+  };
+
+  const deletePost = () => {
+    setPhoto(initialState.photo);
+    setTitle(initialState.title);
+    setLocationTitle(initialState.locationTile);
+    setIsPhotoDownloaded(initialState.isPhotoDownloaded);
+    Alert.alert("Deleted");
+  };
+
+  const isPublisAllowed =
+    title && locationTitle && isPhotoDownloaded && hasCameraPermission;
+
+  useEffect(() => {
+    (async () => {
+      let { status: locationStatus } =
+        await Location.requestForegroundPermissionsAsync();
+      if (locationStatus !== "granted") {
+        Alert.alert("Warning!", "Permission to access location was denied!");
+      }
+      setHasLocationPermission(locationStatus === "granted");
+
+      let { status: cameraStatus } =
+        await Camera.requestCameraPermissionsAsync();
+      if (cameraStatus !== "granted") {
+        Alert.alert(
+          "Faile!",
+          "Access denied. Yo need add your access to take a photo"
+        );
+      }
+      setHasCameraPermission(cameraStatus === "granted");
+    })();
+  }, []);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setIsShowKeybord(true);
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setIsShowKeybord(false);
+    });
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <View>
-        <View>
-          <View style={styles.imageWrapper}>
-            <View
+    <TouchableWithoutFeedback onPress={keyboardHide}>
+      <ScrollView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <SafeAreaView
+          style={{
+            ...styles.container,
+            // paddingBottom: isShowKeybord ? 32 : 34,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <View style={styles.cameraContainer}>
+              <Camera style={styles.camera} ref={setCamera}>
+                {photo ? (
+                  <View style={styles.photoContainer}>
+                    <Image source={{ uri: photo }} style={styles.takedPhoto} />
+                  </View>
+                ) : null}
+                <TouchableOpacity
+                  style={styles.shotButtonContainer}
+                  onPress={takePhoto}
+                  activeOpacity={0.8}
+                  setIsPhotoDownloaded={true}
+                >
+                  <MaterialIcons name="camera-alt" size={24} color="#BDBDBD" />
+                </TouchableOpacity>
+                {/* <TouchableOpacity
+              style={{ position: "absolute", top: 50 }}
+              onPress={toggleCameraType}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="flip-camera-ios" size={24} color="#fff" />
+            </TouchableOpacity> */}
+              </Camera>
+            </View>
+
+            <Text
               style={{
-                // position: "absolute",
-                // top: 90,
-                // left: Dimensions.get("window").width * 0.455 - 32,
-                borderRadius: 50,
-                height: 60,
-                width: 60,
-                backgroundColor: "#fff",
-                alignItems: "center",
-                justifyContent: "center",
+                color: "#BDBDBD",
+                fontFamily: "Roboto-Regular",
+                fontSize: 16,
+                marginBottom: 48,
+                marginTop: 8,
               }}
             >
-              <TouchableOpacity onPress={() => Alert.alert("Smile")}>
-                <MaterialIcons name="camera-alt" size={24} color="#BDBDBD" />
-              </TouchableOpacity>
-            </View>
+              {isPhotoDownloaded ? "Edit photo" : "Download photo"}
+            </Text>
+            <KeyboardAvoidingView
+              behavior={Platform.OS == "ios" ? "padding" : "height"}
+            >
+              <View
+                style={{
+                  marginBottom: 32,
+                  borderBottomWidth: 1,
+                  borderBottomColor:
+                    focusedInput === "title" ? "#ff6c00" : "#e8e8e8",
+                }}
+              >
+                <TextInput
+                  value={title}
+                  onChangeText={titleHandler}
+                  style={styles.input}
+                  placeholder="Title..."
+                  placeholderTextColor="#BDBDBD"
+                  onFocus={() => {
+                    setIsShowKeybord(true);
+                    setFocusedInput("title");
+                  }}
+                  onBlur={() => setFocusedInput(null)}
+                  onSubmitEditing={() => keyboardHide()}
+                />
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  borderBottomWidth: 1,
+                  borderBottomColor:
+                    focusedInput === "locationTitle" ? "#ff6c00" : "#e8e8e8",
+                }}
+              >
+                <Feather
+                  name="map-pin"
+                  size={24}
+                  color="#BDBDBD"
+                  style={{ marginRight: 8 }}
+                />
+                <TextInput
+                  value={locationTitle}
+                  onChangeText={locationTitleHandler}
+                  style={styles.input}
+                  placeholder="Location..."
+                  placeholderTextColor="#BDBDBD"
+                  onFocus={() => {
+                    setIsShowKeybord(true);
+                    setFocusedInput("locationTitle");
+                  }}
+                  onBlur={() => setFocusedInput(null)}
+                  onSubmitEditing={() => keyboardHide()}
+                />
+              </View>
+              {isShowKeybord ? null : (
+                <>
+                  <TouchableOpacity
+                    style={{
+                      ...styles.btn,
+                      backgroundColor: isPublisAllowed ? "#FF6C00" : "#F6F6F6",
+                    }}
+                    activeOpacity={0.7}
+                    onPress={publishPost}
+                  >
+                    <Text
+                      style={{
+                        ...styles.btnText,
+                        color: isPublisAllowed ? "#fff" : "#BDBDBD",
+                      }}
+                    >
+                      Publish
+                    </Text>
+                  </TouchableOpacity>
+                  <View style={{ flex: 1 }}>
+                    <TouchableOpacity
+                      style={styles.deleteBtnWrapper}
+                      activeOpacity={0.7}
+                      onPress={deletePost}
+                    >
+                      <Feather name="trash-2" size={24} color="#DADADA" />
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+            </KeyboardAvoidingView>
           </View>
-          <Text
-            style={{
-              color: "#BDBDBD",
-              fontFamily: "Roboto-Regular",
-              fontSize: 16,
-              marginBottom: 48,
-              marginTop: 8,
-            }}
-          >
-            Download photo
-          </Text>
-        </View>
-        <View
-          style={{
-            borderBottomColor: "#E8E8E8",
-            borderBottomWidth: 1,
-            marginBottom: 32,
-          }}
-        >
-          <TextInput
-            style={styles.input}
-            placeholder="Title..."
-            placeholderTextColor="#BDBDBD"
-          />
-        </View>
-        <View
-          style={{
-            borderBottomColor: "#E8E8E8",
-            borderBottomWidth: 1,
-            flexDirection: "row",
-          }}
-        >
-          <Feather
-            name="map-pin"
-            size={24}
-            color="#BDBDBD"
-            style={{ marginRight: 8 }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Location..."
-            placeholderTextColor="#BDBDBD"
-          />
-        </View>
-        <TouchableOpacity
-          style={{
-            ...styles.btn,
-          }}
-          activeOpacity={0.7}
-          onPress={() => Alert.alert("Publish post!")}
-          // onPress={onLogin}
-        >
-          <Text style={styles.btnText}>Publish</Text>
-        </TouchableOpacity>
-        <View>
-          <TouchableOpacity
-            style={styles.deleteBtnWrapper}
-            activeOpacity={0.7}
-            onPress={() => Alert.alert("Delete post!")}
-          >
-            <Feather name="trash-2" size={24} color="#DADADA" />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+        </SafeAreaView>
+      </ScrollView>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+  // container: {
+  //   flex: 1,
+  //   backgroundColor: "#fff",
+  //   borderTopWidth: 1,
+  //   borderTopColor: "#E5E5E5",
+  //   paddingHorizontal: 16,
+  //   paddingTop: 32,
+  //   // paddingBottom: 64,
+  // },
   container: {
     flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    paddingHorizontal: Dimensions.get("window").width * 0.045,
+    paddingVertical: 32,
     backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#E5E5E5",
-    paddingHorizontal: 16,
-    paddingTop: 32,
+  },
+  cameraContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: Dimensions.get("window").width * 0.91,
+    height: 240,
+    backgroundColor: "#F6F6F6",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
+    overflow: "hidden",
+  },
+  camera: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  photoContainer: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+  },
+  takedPhoto: {
+    width: "100%",
+    height: "100%",
+  },
+  shotButtonContainer: {
+    borderRadius: 50,
+    height: 60,
+    width: 60,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
   imageWrapper: {
     justifyContent: "center",
@@ -127,7 +347,7 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
   },
   btn: {
-    backgroundColor: "#F6F6F6",
+    // backgroundColor: "#F6F6F6",
     marginHorizontal: 16,
     borderRadius: 100,
     height: 51,
@@ -138,12 +358,13 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     lineHeight: 19,
-    color: "#BDBDBD",
+    // color: "#BDBDBD",
     textAlign: "center",
   },
   deleteBtnWrapper: {
-    position: "absolute",
-    top: 100,
+    // position: "absolute",
+    // bottom: 10,
+    marginTop: 100,
     left: Dimensions.get("window").width * 0.37,
     backgroundColor: "#F6F6F6",
     borderRadius: 20,
