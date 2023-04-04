@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
+import { store } from "./redux/store";
+import { Provider } from "react-redux";
 
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
@@ -39,11 +41,13 @@ export default function App() {
   }
 
   return (
-    <View style={styles.container} onLayout={onLayoutRootView}>
-      <UserProvider>
-        <Router />
-      </UserProvider>
-    </View>
+    <Provider store={store}>
+      <View style={styles.container} onLayout={onLayoutRootView}>
+        <UserProvider>
+          <Router />
+        </UserProvider>
+      </View>
+    </Provider>
   );
 }
 

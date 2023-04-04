@@ -14,7 +14,10 @@ import {
   Dimensions,
 } from "react-native";
 
-import { useUserData } from "../../userData";
+import { useDispatch } from "react-redux";
+import { signUp } from "../../redux/auth/authOperations";
+
+// import { useUserData } from "../../userData";
 import { AntDesign } from "@expo/vector-icons";
 
 const initialState = {
@@ -38,6 +41,8 @@ export default function RegistrationScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(initialState.showPassword);
   const [focusedInput, setFocusedInput] = useState(initialState.focusedInput);
 
+  const dispatch = useDispatch();
+
   const nameHandler = (text) => setName(text);
   const emailHandler = (text) => setEmail(text);
   const passwordHandler = (text) => setPassword(text);
@@ -53,19 +58,25 @@ export default function RegistrationScreen({ navigation }) {
   };
 
   const resetForm = () => {
+    setName(initialState.name);
     setEmail(initialState.email);
     setPassword(initialState.password);
     setShowPassword(initialState.showPassword);
   };
 
-  const { loginUser } = useUserData();
+  // const { loginUser } = useUserData();
 
   const onRegister = () => {
     if (name === "" || email === "" || password === "") {
       return Alert.alert("Error", "Please fill in all fields! And try again!");
     }
+    console.log("name", name);
+    console.log("email", email);
+    console.log("password", password);
+    dispatch(signUp(email, password));
     keyboardHide();
-    loginUser();
+    resetForm();
+    // loginUser();
   };
 
   useEffect(() => {
@@ -135,7 +146,7 @@ export default function RegistrationScreen({ navigation }) {
                     setFocusedInput("name");
                   }}
                   onBlur={() => setFocusedInput(null)}
-                  onSubmitEditing={() => keyboardHide()}
+                  onSubmitEditing={onRegister}
                 />
               </View>
               <View>
@@ -156,7 +167,7 @@ export default function RegistrationScreen({ navigation }) {
                     setIsShowKeybord(true);
                   }}
                   onBlur={() => setFocusedInput(null)}
-                  onSubmitEditing={() => keyboardHide()}
+                  onSubmitEditing={onRegister}
                 />
               </View>
               <View>
@@ -178,7 +189,7 @@ export default function RegistrationScreen({ navigation }) {
                     setIsShowKeybord(true);
                   }}
                   onBlur={() => setFocusedInput(null)}
-                  onSubmitEditing={() => keyboardHide()}
+                  onSubmitEditing={onRegister}
                 />
                 <Text
                   style={styles.showPasswordBtn}
