@@ -1,9 +1,12 @@
-import { Alert, Button, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import { Alert, TouchableOpacity, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-import { useUserData } from "./userData";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUser } from "./redux/auth/authSelectors";
+
 import RegistrationScreen from "./Screens/auth/RegistrationScreen";
 import LoginScreen from "./Screens/auth/LoginScreen";
 import Home from "./Screens/mainScreen/Home";
@@ -16,18 +19,24 @@ import ProfileScreen from "./Screens/mainScreen/ProfileScreen";
 import { MaterialIcons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
+import { refresh, signout } from "./redux/auth/authOperations";
+import { useEffect } from "react";
 
 const MainStack = createStackNavigator();
 const AuthStack = createStackNavigator();
 const MainTab = createBottomTabNavigator();
 
 const TabRouter = () => {
+  useEffect(() => {
+    dispatch(refresh());
+  }, [dispatch]);
+
+  const dispatch = useDispatch();
   const [loggingOut, setLoggingOut] = useState(false);
-  const { logoutUser } = useUserData();
+  const logOut = () => dispatch(signout());
   const onLogout = () => {
     if (loggingOut) {
-      logoutUser();
+      logOut();
       setLoggingOut(false);
     } else {
       setLoggingOut(true);
@@ -35,7 +44,7 @@ const TabRouter = () => {
         "Confirm Logout",
         "Are you sure you want to log out of the app?",
         [
-          { text: "Yes", onPress: logoutUser },
+          { text: "Yes", onPress: logOut },
           { text: "NO", onPress: () => setLoggingOut(false) },
         ]
       );
@@ -150,9 +159,9 @@ const TabRouter = () => {
 };
 
 const useRoute = () => {
-  const { isAuth } = useUserData();
-
-  if (!isAuth) {
+  // const { isAuth } = useUserData();
+  const { userId } = useSelector(selectUser);
+  if (!userId) {
     return (
       <AuthStack.Navigator initialRouteName="Login">
         <AuthStack.Screen

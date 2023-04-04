@@ -14,11 +14,12 @@ import {
   Dimensions,
 } from "react-native";
 
-import { useDispatch } from "react-redux";
-import { signUp } from "../../redux/auth/authOperations";
+import { useDispatch, useSelector } from "react-redux";
+import { refresh, signUp } from "../../redux/auth/authOperations";
 
 // import { useUserData } from "../../userData";
 import { AntDesign } from "@expo/vector-icons";
+import { selectUser } from "../../redux/auth/authSelectors";
 
 const initialState = {
   avatar: "",
@@ -42,6 +43,7 @@ export default function RegistrationScreen({ navigation }) {
   const [focusedInput, setFocusedInput] = useState(initialState.focusedInput);
 
   const dispatch = useDispatch();
+  const { userId } = useSelector(selectUser);
 
   const nameHandler = (text) => setName(text);
   const emailHandler = (text) => setEmail(text);
@@ -70,14 +72,15 @@ export default function RegistrationScreen({ navigation }) {
     if (name === "" || email === "" || password === "") {
       return Alert.alert("Error", "Please fill in all fields! And try again!");
     }
-    console.log("name", name);
-    console.log("email", email);
-    console.log("password", password);
     dispatch(signUp({ email, password }));
     keyboardHide();
-    resetForm();
+    userId && resetForm();
     // loginUser();
   };
+
+  useEffect(() => {
+    dispatch(refresh());
+  }, [dispatch]);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {

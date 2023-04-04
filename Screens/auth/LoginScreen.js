@@ -14,7 +14,11 @@ import {
   Dimensions,
 } from "react-native";
 
-import { useUserData } from "../../userData";
+import { useDispatch, useSelector } from "react-redux";
+import { refresh, signIn } from "../../redux/auth/authOperations";
+import { selectUser } from "../../redux/auth/authSelectors";
+
+// import { useUserData } from "../../userData";
 
 const initialState = {
   email: "",
@@ -32,6 +36,9 @@ export default function LoginScreen({ navigation }) {
   );
   const [showPassword, setShowPassword] = useState(initialState.showPassword);
   const [focusedInput, setFocusedInput] = useState(initialState.focusedInput);
+
+  const dispatch = useDispatch();
+  const { userId } = useSelector(selectUser);
 
   const emailHandler = (text) => setEmail(text);
   const passwordHandler = (text) => setPassword(text);
@@ -52,16 +59,20 @@ export default function LoginScreen({ navigation }) {
     setShowPassword(initialState.showPassword);
   };
 
-  const { loginUser } = useUserData();
+  // const { loginUser } = useUserData();
 
   const onLogin = () => {
     if (email === "" || password === "") {
       return Alert.alert("Error", "Please fill in all fields! And try again!");
     }
+    dispatch(signIn({ email, password }));
     keyboardHide();
-    resetForm();
-    loginUser();
+    userId && resetForm();
   };
+
+  useEffect(() => {
+    dispatch(refresh());
+  }, [dispatch]);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
@@ -112,6 +123,7 @@ export default function LoginScreen({ navigation }) {
                     setIsShowKeybord(true);
                   }}
                   onBlur={() => setFocusedInput(null)}
+                  onSubmitEditing={onLogin}
                 />
               </View>
               <View>
@@ -133,6 +145,7 @@ export default function LoginScreen({ navigation }) {
                     setIsShowKeybord(true);
                   }}
                   onBlur={() => setFocusedInput(null)}
+                  onSubmitEditing={onLogin}
                 />
                 <Text
                   style={styles.showPasswordBtn}

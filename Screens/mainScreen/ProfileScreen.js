@@ -10,17 +10,24 @@ import {
   Alert,
 } from "react-native";
 
-import { useUserData } from "../../userData";
-
 import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useEffect } from "react";
+import { refresh, signout } from "../../redux/auth/authOperations";
+import { useDispatch } from "react-redux";
 
 export default function ProfileScreen({ navigation }) {
+  useEffect(() => {
+    dispatch(refresh());
+  }, [dispatch]);
+
+  const dispatch = useDispatch();
+  const logOut = () => dispatch(signout());
+
   const [loggingOut, setLoggingOut] = useState(false);
-  const { logoutUser } = useUserData();
   const onLogout = () => {
     if (loggingOut) {
-      logoutUser();
+      logOut();
       setLoggingOut(false);
     } else {
       setLoggingOut(true);
@@ -28,7 +35,7 @@ export default function ProfileScreen({ navigation }) {
         "Confirm Logout",
         "Are you sure you want to log out of the app?",
         [
-          { text: "Yes", onPress: logoutUser },
+          { text: "Yes", onPress: logOut },
           { text: "NO", onPress: () => setLoggingOut(false) },
         ]
       );

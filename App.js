@@ -6,7 +6,6 @@ import { Provider } from "react-redux";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
 import Router from "./router";
-import UserProvider from "./components/UserProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -43,9 +42,7 @@ export default function App() {
   return (
     <Provider store={store}>
       <View style={styles.container} onLayout={onLayoutRootView}>
-        <UserProvider>
-          <Router />
-        </UserProvider>
+        <Router />
       </View>
     </Provider>
   );

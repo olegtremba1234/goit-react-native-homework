@@ -22,11 +22,6 @@ export default function PostsScreen({ navigation, route }) {
       setItem(route.params);
     }
   }, [route.params]);
-  console.log("posts", posts);
-  console.log("route.params", route.params);
-  if (item !== []) {
-    console.log("item", item);
-  }
 
   return (
     <View style={styles.container}>
