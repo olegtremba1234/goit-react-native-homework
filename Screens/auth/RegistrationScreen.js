@@ -73,7 +73,7 @@ export default function RegistrationScreen({ navigation }) {
     console.log("name", name);
     console.log("email", email);
     console.log("password", password);
-    dispatch(signUp(email, password));
+    dispatch(signUp({ email, password }));
     keyboardHide();
     resetForm();
     // loginUser();
