@@ -14,7 +14,8 @@ import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { refresh, signout } from "../../redux/auth/authOperations";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUser } from "../../redux/auth/authSelectors";
 
 export default function ProfileScreen({ navigation }) {
   useEffect(() => {
@@ -22,6 +23,7 @@ export default function ProfileScreen({ navigation }) {
   }, [dispatch]);
 
   const dispatch = useDispatch();
+  const { userId, name, email } = useSelector(selectUser);
   const logOut = () => dispatch(signout());
 
   const [loggingOut, setLoggingOut] = useState(false);
@@ -73,7 +75,7 @@ export default function ProfileScreen({ navigation }) {
               </View>
             </TouchableOpacity>
           </View>
-          <Text style={styles.title}>Natali Romanova</Text>
+          <Text style={styles.title}>{name}</Text>
           <View style={styles.postWrapper}>
             <View style={styles.imageWrapper}>
               {/* <Image

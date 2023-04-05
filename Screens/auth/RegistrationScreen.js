@@ -17,13 +17,12 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { refresh, signUp } from "../../redux/auth/authOperations";
 
-// import { useUserData } from "../../userData";
 import { AntDesign } from "@expo/vector-icons";
 import { selectUser } from "../../redux/auth/authSelectors";
 
 const initialState = {
   avatar: "",
-  name: "",
+  displayName: "",
   email: "",
   password: "",
   isShowKeyboard: false,
@@ -33,7 +32,7 @@ const initialState = {
 
 export default function RegistrationScreen({ navigation }) {
   const [avatar, setAvatar] = useState(initialState.avatar);
-  const [name, setName] = useState(initialState.name);
+  const [displayName, setName] = useState(initialState.displayName);
   const [email, setEmail] = useState(initialState.email);
   const [password, setPassword] = useState(initialState.password);
   const [isShowKeybord, setIsShowKeybord] = useState(
@@ -60,7 +59,7 @@ export default function RegistrationScreen({ navigation }) {
   };
 
   const resetForm = () => {
-    setName(initialState.name);
+    setName(initialState.displayName);
     setEmail(initialState.email);
     setPassword(initialState.password);
     setShowPassword(initialState.showPassword);
@@ -69,13 +68,12 @@ export default function RegistrationScreen({ navigation }) {
   // const { loginUser } = useUserData();
 
   const onRegister = () => {
-    if (name === "" || email === "" || password === "") {
+    if (displayName === "" || email === "" || password === "") {
       return Alert.alert("Error", "Please fill in all fields! And try again!");
     }
-    dispatch(signUp({ email, password }));
+    dispatch(signUp({ email, password, displayName, avatar }));
     keyboardHide();
     userId && resetForm();
-    // loginUser();
   };
 
   useEffect(() => {
@@ -119,7 +117,7 @@ export default function RegistrationScreen({ navigation }) {
                     color="orange"
                     onPress={() => {
                       Alert.alert(
-                        `Hello ${name}!`,
+                        `Hello ${displayName}!`,
                         "This icon can add your photo in the neare future!"
                       );
                     }}
@@ -134,7 +132,7 @@ export default function RegistrationScreen({ navigation }) {
             >
               <View>
                 <TextInput
-                  value={name}
+                  value={displayName}
                   onChangeText={nameHandler}
                   placeholder="Login"
                   placeholderTextColor="#BDBDBD"

@@ -10,16 +10,16 @@ import {
 } from "react-native";
 
 import { Feather, Ionicons } from "@expo/vector-icons";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../redux/auth/authSelectors";
 
 export default function PostsScreen({ navigation, route }) {
   const [posts, setPosts] = useState([]);
-  const [item, setItem] = useState([]);
+  const { userId, name, email, photoURL } = useSelector(selectUser);
+
   useEffect(() => {
     if (route.params) {
       setPosts((prevState) => [...prevState, route.params]);
-    }
-    if (route.params) {
-      setItem(route.params);
     }
   }, [route.params]);
 
@@ -33,8 +33,8 @@ export default function PostsScreen({ navigation, route }) {
           />
         </View>
         <View style={{ marginLeft: 8 }}>
-          <Text style={styles.userName}>Natali Romanova</Text>
-          <Text style={styles.userEmail}>email@example.com</Text>
+          <Text style={styles.userName}>{name}</Text>
+          <Text style={styles.userEmail}>{email}</Text>
         </View>
       </View>
       <FlatList
