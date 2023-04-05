@@ -18,6 +18,9 @@ import {
 
 import { Camera, CameraType } from "expo-camera";
 import * as Location from "expo-location";
+import { uploadPhotoToServer } from "../../redux/media/mediaOperations";
+import { useDispatch } from "react-redux";
+import { nanoid } from "@reduxjs/toolkit";
 
 const initialState = {
   photo: null,
@@ -33,6 +36,7 @@ const initialState = {
 };
 
 export default function CreatePostsScreen({ navigation }) {
+  const dispatch = useDispatch();
   const [title, setTitle] = useState(initialState.title);
   const [locationTitle, setLocationTitle] = useState(initialState.locationTile);
   const [geoLocation, setGeoLocation] = useState(initialState.geoLocation);
@@ -52,12 +56,9 @@ export default function CreatePostsScreen({ navigation }) {
     initialState.hasLocationPermission
   );
 
-  const [cameraPermission, requestCameraPermission] =
-    Camera.useCameraPermissions();
-
   const takePhoto = async () => {
-    const photo = await camera.takePictureAsync();
-    setPhoto(photo.uri);
+    const { uri } = await camera.takePictureAsync();
+    setPhoto(uri);
     setIsPhotoDownloaded(true);
   };
 
@@ -69,6 +70,9 @@ export default function CreatePostsScreen({ navigation }) {
     Keyboard.dismiss();
   };
 
+  const imageName = nanoid();
+  const path = `postImage/${imageName}`;
+
   const publishPost = () => {
     if (photo === null || title === "" || locationTitle === "") {
       return Alert.alert(
@@ -76,7 +80,8 @@ export default function CreatePostsScreen({ navigation }) {
         "Please add photo and fill in all fields! And try again!"
       );
     }
-
+    dispatch(uploadPhotoToServer({ photo, path }));
+    resetForm();
     (async () => {
       let location = hasLocationPermission
         ? await Location.getCurrentPositionAsync({})
@@ -88,21 +93,15 @@ export default function CreatePostsScreen({ navigation }) {
           }
         : null;
 
-      const post = {
-        photo,
-        title,
-        location: coords,
-      };
       navigation.navigate("Posts", { photo, title, location: coords });
     })();
   };
 
-  const deletePost = () => {
+  const resetForm = () => {
     setPhoto(initialState.photo);
     setTitle(initialState.title);
     setLocationTitle(initialState.locationTile);
     setIsPhotoDownloaded(initialState.isPhotoDownloaded);
-    Alert.alert("Deleted");
   };
 
   const isPublisAllowed =
@@ -264,7 +263,7 @@ export default function CreatePostsScreen({ navigation }) {
                     <TouchableOpacity
                       style={styles.deleteBtnWrapper}
                       activeOpacity={0.7}
-                      onPress={deletePost}
+                      onPress={resetForm}
                     >
                       <Feather name="trash-2" size={24} color="#DADADA" />
                     </TouchableOpacity>
