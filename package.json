@@ -23,6 +23,7 @@
     "expo-splash-screen": "~0.17.5",
     "expo-status-bar": "~1.4.4",
     "firebase": "^9.19.1",
+    "nanoid": "^3.3.6",
     "react": "18.1.0",
     "react-devtools": "^4.27.3",
     "react-native": "0.70.5",

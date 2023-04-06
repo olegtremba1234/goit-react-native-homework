@@ -12,7 +12,7 @@ import {
 import { TextInput } from "react-native-gesture-handler";
 
 export default function CommentsScreen({ route }) {
-  // const { photo } = route.params;
+  const { postId } = route.params;
   // console.log("photo", photo);
   // console.log("route.params", route.params);
   return (

@@ -19,8 +19,10 @@ import {
 import { Camera, CameraType } from "expo-camera";
 import * as Location from "expo-location";
 import { uploadPhotoToServer } from "../../redux/media/mediaOperations";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { nanoid } from "@reduxjs/toolkit";
+import { createPost, getPosts } from "../../redux/posts/postsOperations";
+import { selectUser } from "../../redux/auth/authSelectors";
 
 const initialState = {
   photo: null,
@@ -40,6 +42,9 @@ export default function CreatePostsScreen({ navigation }) {
   const [title, setTitle] = useState(initialState.title);
   const [locationTitle, setLocationTitle] = useState(initialState.locationTile);
   const [geoLocation, setGeoLocation] = useState(initialState.geoLocation);
+
+  // console.log("geoLocation>>>>", geoLocation);
+
   const [isShowKeybord, setIsShowKeybord] = useState(
     initialState.isShowKeyboard
   );
@@ -56,10 +61,26 @@ export default function CreatePostsScreen({ navigation }) {
     initialState.hasLocationPermission
   );
 
+  const author = useSelector(selectUser);
+
+  const getLocation = () => {
+    (async () => {
+      let location = hasLocationPermission
+        ? await Location.getCurrentPositionAsync({})
+        : null;
+      setGeoLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+      // console.log("coords>>>", location);
+    })();
+  };
+
   const takePhoto = async () => {
     const { uri } = await camera.takePictureAsync();
     setPhoto(uri);
     setIsPhotoDownloaded(true);
+    getLocation();
   };
 
   const titleHandler = (text) => setTitle(text);
@@ -80,21 +101,12 @@ export default function CreatePostsScreen({ navigation }) {
         "Please add photo and fill in all fields! And try again!"
       );
     }
-    dispatch(uploadPhotoToServer({ photo, path }));
-    resetForm();
-    (async () => {
-      let location = hasLocationPermission
-        ? await Location.getCurrentPositionAsync({})
-        : null;
-      const coords = hasLocationPermission
-        ? {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-          }
-        : null;
 
-      navigation.navigate("Posts", { photo, title, location: coords });
-    })();
+    dispatch(uploadPhotoToServer({ photo, path }));
+    dispatch(createPost({ author, photo, title, locationTitle, geoLocation }));
+    resetForm();
+    dispatch(getPosts());
+    navigation.navigate("Posts");
   };
 
   const resetForm = () => {

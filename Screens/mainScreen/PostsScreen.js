@@ -5,23 +5,34 @@ import {
   StyleSheet,
   Image,
   FlatList,
-  Dimensions,
   TouchableOpacity,
 } from "react-native";
 
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/auth/authSelectors";
+import { db } from "../../firebase/config";
+import { collection, onSnapshot } from "@firebase/firestore";
 
 export default function PostsScreen({ navigation, route }) {
   const [posts, setPosts] = useState([]);
   const { userId, name, email, photoURL } = useSelector(selectUser);
 
+  const getAllPost = async () => {
+    await onSnapshot(collection(db, "posts"), (snapshots) => {
+      setPosts(snapshots.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+  };
+
   useEffect(() => {
-    if (route.params) {
-      setPosts((prevState) => [...prevState, route.params]);
-    }
-  }, [route.params]);
+    getAllPost();
+  }, []);
+
+  // useEffect(() => {
+  //   if (route.params) {
+  //     setPosts((prevState) => [...prevState, route.params]);
+  //   }
+  // }, [route.params]);
 
   return (
     <View style={styles.container}>
@@ -64,7 +75,7 @@ export default function PostsScreen({ navigation, route }) {
               >
                 <TouchableOpacity
                   activeOpacity={0.7}
-                  onPress={() => navigation.navigate("Comments")}
+                  onPress={() => navigation.navigate("Comments", { id })}
                 >
                   <Feather
                     name="message-circle"
