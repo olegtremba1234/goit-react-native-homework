@@ -75,7 +75,9 @@ export default function PostsScreen({ navigation, route }) {
               >
                 <TouchableOpacity
                   activeOpacity={0.7}
-                  onPress={() => navigation.navigate("Comments", { id })}
+                  onPress={() =>
+                    navigation.navigate("Comments", { postId: item.id })
+                  }
                 >
                   <Feather
                     name="message-circle"

@@ -1,5 +1,5 @@
 import { AntDesign } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,11 +8,17 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  TextInput,
 } from "react-native";
-import { TextInput } from "react-native-gesture-handler";
+import { db } from "../../firebase/config";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../redux/auth/authSelectors";
 
 export default function CommentsScreen({ route }) {
   const { postId } = route.params;
+  const [comment, setComment] = useState("");
+  const { name } = useSelector(selectUser);
+  const createComment = async () => {};
   // console.log("photo", photo);
   // console.log("route.params", route.params);
   return (

@@ -159,7 +159,6 @@ const TabRouter = () => {
 };
 
 const useRoute = () => {
-  // const { isAuth } = useUserData();
   const { userId } = useSelector(selectUser);
   if (!userId) {
     return (
